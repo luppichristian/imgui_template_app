@@ -62,5 +62,10 @@ set_target_properties(${TITLE} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE
 # Include directories
 target_include_directories(${TITLE} PRIVATE "src/")
 
+# Linker options
+if(WIN32)
+  target_link_options(${TITLE} PRIVATE "/SUBSYSTEM:WINDOWS")
+endif()
+
 # Libraries
 target_link_libraries(${TITLE} PRIVATE SDL3-static ImGui)
