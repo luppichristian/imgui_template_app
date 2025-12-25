@@ -9,10 +9,3 @@
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlgpu3.h>
 #include <imgui_internal.h>
-
-struct AppState
-{
-  SDL_Window *window;
-  SDL_GPUDevice *gpuDevice;
-  bool isFullscreen;
-};

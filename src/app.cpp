@@ -1,4 +1,9 @@
 #include "app.h"
+#include "user.h"
+
+SDL_Window *window;
+SDL_GPUDevice *gpuDevice;
+bool isFullscreen;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
 {
@@ -10,11 +15,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
   }
 
   // Create window
-  SDL_Window *window = SDL_CreateWindow(
-      "imgui_template_app",
-      1280, 720,
-      SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
-
+  window = SDL_CreateWindow(TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_FLAGS);
   if (!window)
   {
     SDL_Log("Failed to create window: %s", SDL_GetError());
@@ -22,7 +23,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
   }
 
   // Create GPU device
-  SDL_GPUDevice *gpuDevice = SDL_CreateGPUDevice(
+  gpuDevice = SDL_CreateGPUDevice(
       SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL,
       true,
       nullptr);
@@ -85,13 +86,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
     return SDL_APP_FAILURE;
   }
 
-  // Allocate app state
-  AppState *state = new AppState();
-  state->window = window;
-  state->gpuDevice = gpuDevice;
-  state->isFullscreen = false;
-  *appstate = state;
-
+  isFullscreen = false;
   return SDL_APP_CONTINUE;
 }
 
@@ -102,16 +97,15 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
   if (event->type == SDL_EVENT_QUIT)
     return SDL_APP_SUCCESS;
 
-  AppState *state = (AppState *)appstate;
   if (event->type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
-      event->window.windowID == SDL_GetWindowID(state->window))
+      event->window.windowID == SDL_GetWindowID(window))
     return SDL_APP_SUCCESS;
 
   // Handle F11 for fullscreen toggle
   if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_F11)
   {
-    state->isFullscreen = !state->isFullscreen;
-    SDL_SetWindowFullscreen(state->window, state->isFullscreen);
+    isFullscreen = !isFullscreen;
+    SDL_SetWindowFullscreen(window, isFullscreen);
   }
 
   return SDL_APP_CONTINUE;
@@ -119,7 +113,6 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-  AppState *state = (AppState *)appstate;
   ImGuiIO &io = ImGui::GetIO();
 
   // Start the Dear ImGui frame
@@ -127,62 +120,19 @@ SDL_AppResult SDL_AppIterate(void *appstate)
   ImGui_ImplSDL3_NewFrame();
   ImGui::NewFrame();
 
-  // Create a fullscreen dockspace
-  ImGuiViewport *viewport = ImGui::GetMainViewport();
-  ImGui::SetNextWindowPos(viewport->WorkPos);
-  ImGui::SetNextWindowSize(viewport->WorkSize);
-  ImGui::SetNextWindowViewport(viewport->ID);
-
-  ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
-                                  ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-                                  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
-                                  ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
-
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-  ImGui::Begin("DockSpace", nullptr, window_flags);
-  ImGui::PopStyleVar(3);
-
-  ImGuiID dockspace_id = ImGui::GetID("MainDockSpace");
-
-  // Build the dockspace layout on first run
-  static bool first_time = true;
-  if (first_time)
-  {
-    first_time = false;
-    ImGui::DockBuilderRemoveNode(dockspace_id);
-    ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
-    ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->WorkSize);
-
-    // Dock the window to fill the space
-    ImGui::DockBuilderDockWindow("Example", dockspace_id);
-
-    ImGui::DockBuilderFinish(dockspace_id);
-  }
-
-  ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_NoUndocking);
-  ImGui::End();
-
-  // Example ImGui window
-  {
-    ImGui::Begin("Example", nullptr, ImGuiWindowFlags_NoMove);
-    ImGui::Text("This is a sample ImGui window.");
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-                1000.0f / io.Framerate, io.Framerate);
-    ImGui::End();
-  }
+  // Build UI
+  buildUI();
 
   // Rendering
   ImGui::Render();
 
-  SDL_GPUCommandBuffer *cmd = SDL_AcquireGPUCommandBuffer(state->gpuDevice);
+  SDL_GPUCommandBuffer *cmd = SDL_AcquireGPUCommandBuffer(gpuDevice);
   if (cmd)
   {
     ImGui_ImplSDLGPU3_PrepareDrawData(ImGui::GetDrawData(), cmd);
 
     SDL_GPUTexture *swapchain_texture;
-    if (SDL_WaitAndAcquireGPUSwapchainTexture(cmd, state->window, &swapchain_texture, nullptr, nullptr))
+    if (SDL_WaitAndAcquireGPUSwapchainTexture(cmd, window, &swapchain_texture, nullptr, nullptr))
     {
       if (swapchain_texture)
       {
@@ -208,16 +158,12 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
-  AppState *state = (AppState *)appstate;
-
   // Cleanup
   ImGui_ImplSDLGPU3_Shutdown();
   ImGui_ImplSDL3_Shutdown();
   ImGui::DestroyContext();
 
-  SDL_ReleaseWindowFromGPUDevice(state->gpuDevice, state->window);
-  SDL_DestroyGPUDevice(state->gpuDevice);
-  SDL_DestroyWindow(state->window);
-
-  delete state;
+  SDL_ReleaseWindowFromGPUDevice(gpuDevice, window);
+  SDL_DestroyGPUDevice(gpuDevice);
+  SDL_DestroyWindow(window);
 }
