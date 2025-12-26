@@ -1,6 +1,6 @@
 #include "user.h"
 
-void buildUI()
+void Build()
 {
   ImGuiIO &io = ImGui::GetIO();
 

@@ -121,7 +121,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
   ImGui::NewFrame();
 
   // Build UI
-  buildUI();
+  Build();
 
   // Rendering
   ImGui::Render();

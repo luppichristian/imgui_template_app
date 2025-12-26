@@ -27,6 +27,11 @@ FetchContent_Declare(imgui GIT_REPOSITORY https://github.com/ocornut/imgui GIT_T
 FetchContent_MakeAvailable(imgui)
 FetchContent_GetProperties(imgui SOURCE_DIR IMGUI_SOURCE_DIR)
 
+# Fetch ImGuizmo
+FetchContent_Declare(imguizmo GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo GIT_TAG df1c30142e7c3fb13c171aaeb328bb338fa7aaa6 OVERRIDE_FIND_PACKAGE)
+FetchContent_MakeAvailable(imguizmo)
+FetchContent_GetProperties(imguizmo SOURCE_DIR IMGUIZMO_SOURCE_DIR)
+
 # Setup ImGui target
 add_library(ImGui STATIC
   "${IMGUI_SOURCE_DIR}/imgui_demo.cpp"
@@ -36,9 +41,15 @@ add_library(ImGui STATIC
   "${IMGUI_SOURCE_DIR}/imgui_widgets.cpp"
   "${IMGUI_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp"
   "${IMGUI_SOURCE_DIR}/backends/imgui_impl_sdlgpu3.cpp"
+  "${IMGUIZMO_SOURCE_DIR}/ImGuizmo.cpp"
+  "${IMGUIZMO_SOURCE_DIR}/GraphEditor.cpp"
+  "${IMGUIZMO_SOURCE_DIR}/ImCurveEdit.cpp"
+  "${IMGUIZMO_SOURCE_DIR}/ImGradient.cpp"
+  "${IMGUIZMO_SOURCE_DIR}/ImSequencer.cpp"
 )
 target_include_directories( ImGui PUBLIC
  ${IMGUI_SOURCE_DIR}
+ ${IMGUIZMO_SOURCE_DIR}
  ${IMGUI_SOURCE_DIR}/backends
  ${SDL3_SOURCE_DIR}/include
 )
