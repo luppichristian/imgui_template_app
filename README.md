@@ -8,6 +8,12 @@ This project provides a ready-to-use template for building graphical application
 
 SDL_GPU was chosen for its excellent cross-platform graphics support, providing a modern GPU API that works seamlessly across Windows, Linux, and macOS.
 
+## Extensions
+
+This template includes [ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo) by default for 3D gizmo manipulation. Additional ImGui extensions can be integrated following the same pattern in [CMakeLists.txt](CMakeLists.txt).
+
+For a comprehensive list of available extensions, visit the [ImGui Useful Extensions Wiki](https://github.com/ocornut/imgui/wiki/Useful-Extensions).
+
 ## Prerequisites
 
 - **CMake** (version 3.14 or higher)
