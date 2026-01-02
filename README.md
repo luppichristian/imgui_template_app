@@ -71,21 +71,6 @@ After building, run the executable:
 ./build/imgui_template_app
 ```
 
-## Project Structure
-
-```
-imgui_template_app/
-├── CMakeLists.txt          # CMake build configuration
-├── imgui.ini               # ImGui layout configuration
-├── src/                    # Source code
-│   ├── app.cpp             # Application implementation
-│   ├── app.h               # Application header
-│   ├── user.cpp            # User code implementation
-│   └── user.h              # User code header
-└── build/                  # Build output directory
-    └── _deps/              # Fetched dependencies
-```
-
 ## Customization
 
 ### Adding Your Code
@@ -102,7 +87,6 @@ Start by modifying the files in the `src/` directory to implement your own funct
 Edit `imgui.ini` to customize the default window layout and settings. This file is automatically updated when you move or resize ImGui windows.
 
 ## Features
-
 - ✅ Cross-platform support (Windows, Linux, macOS)
 - ✅ Modern CMake setup with automatic dependency management
 - ✅ ImGui integration with SDL3 backend
@@ -127,25 +111,14 @@ cmake --build build
 ```
 
 ### Missing Dependencies
-
 Ensure you have CMake and a C++ compiler installed. On Windows, you may need to run CMake from a Visual Studio Developer Command Prompt.
 
 ## License
-
 This template is provided as-is for use in your projects. Please check the licenses of the included dependencies:
 - [Dear ImGui License](https://github.com/ocornut/imgui/blob/master/LICENSE.txt)
 - [SDL3 License](https://github.com/libsdl-org/SDL/blob/main/LICENSE.txt)
 
 ## Resources
-
 - [Dear ImGui Documentation](https://github.com/ocornut/imgui)
 - [ImGui Wiki](https://github.com/ocornut/imgui/wiki)
 - [SDL3 Documentation](https://wiki.libsdl.org/SDL3/)
-
-## Contributing
-
-Feel free to fork this template and customize it for your needs. Consider sharing improvements back to the community!
-
----
-
-**Happy coding!** 🚀
